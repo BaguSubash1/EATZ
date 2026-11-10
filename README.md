@@ -162,27 +162,27 @@ TODO (team): confirm owners.
 Owners below are taken from the Section 8 plan in the specification. TODO (team): confirm
 each row and fill in the "how" (wrote / revised / reviewed / tested / GenAI-assisted).
 
-| File | Who worked on it | How |
+| File | Who worked on it | Validator |
 |---|---|---|
-| `model/LinkedDeque.java` (includes `Node`) | Hannah | TODO |
-| `model/OrderLine.java` | Hannah | TODO |
-| `model/Order.java` | Rohit | TODO |
-| `model/OrderStatus.java` | Rohit | TODO |
-| `model/OrderInfo.java` | Rohit | TODO |
-| `model/OrderValidator.java` | Rohit | TODO |
-| `view/ConsoleView.java` | Bagu | TODO |
-| `controller/EatzController.java` | Ian | TODO |
-| `controller/EatzApp.java` | Ian | TODO |
-| `ModelDriver.java` | TODO | TODO |
-| `build.ps1`, `.gitignore` | TODO | TODO |
-| `test/model/LinkedDequeTest.java` | Hannah | TODO |
-| `test/model/OrderLineTest.java` | Hannah | TODO |
-| `test/model/OrderTest.java` | Rohit | TODO |
-| `test/model/OrderInfoTest.java` | Rohit | TODO |
-| `test/model/OrderValidatorTest.java` | Rohit | TODO |
-| `test/controller/EatzControllerTest.java` | Ian | TODO |
+| `model/LinkedDeque.java` (includes `Node`) | Hannah | Ian |
+| `model/OrderLine.java` | Hannah | Bagu |
+| `model/Order.java` | Rohit | Hannah |
+| `model/OrderStatus.java` | Rohit | Ian |
+| `model/OrderInfo.java` | Rohit | Bagu |
+| `model/OrderValidator.java` | Rohit | Ian |
+| `view/ConsoleView.java` | Bagu | Hannah |
+| `controller/EatzController.java` | Ian | Hannah |
+| `controller/EatzApp.java` | Ian | Rohit |
+| `ModelDriver.java` | Bagu | Hannah |
+| `build.ps1`, `.gitignore` | Bagu | Ian |
+| `test/model/LinkedDequeTest.java` | Hannah | Rohit |
+| `test/model/OrderLineTest.java` | Hannah | Ian |
+| `test/model/OrderTest.java` | Bagu | Rohit |
+| `test/model/OrderInfoTest.java` | Rohit | Hannah |
+| `test/model/OrderValidatorTest.java` | Rohit | Ian |
+| `test/controller/EatzControllerTest.java` | Ian | Bagu |
 
 ### GenAI note
 
-***During the preparation of this assignment, we used ChatGPT, in the development of Court vision for help and guidance in creating the files for the program when we were completely stuck. After using this tool, I reviewed and edited the content as needed to ensure its accuracy and take full responsibility for the content in relation to grading.***
+***During the preparation of this assignment, we used ChatGPT, in the development of EATZ for help and guidance in creating the files for the program when we were completely stuck. After using this tool, I reviewed and edited the content as needed to ensure its accuracy and take full responsibility for the content in relation to grading.***
 >>>>>>> 544e030 (EATZ first prototype)
