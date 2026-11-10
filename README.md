@@ -93,7 +93,9 @@ From what the spec's GenAI note records:
 
 **What doesn't work yet?**
 - MVP features: all five menu choices work. Nothing is saved: the line lives in memory only, as the MVP says.
-- Bad-input cases from Section 6: all are handled and have a test (JUnit for model rules, `EatzControllerTest` for the controller/view rules).
+- Bad-input cases from Section 6: not all are handled.
+- Need to include a show menu option for user convienence.
+- Need to display order ID from the model side on the view side for the remake option to work.
 - Not automatically tested: the Ctrl+C shutdown hook in `EatzApp` (it needs a real terminal), and `ConsoleView` formatting on its own (it is only checked through the scripted run).
 - No test checks the Section 4 invariants (`nodeById.size() == waiting.size()` etc.) directly, because those fields are private. They are only checked indirectly through `size()` / `getLine()`.
 - `addOrder` counts orders per phone by walking the whole line (O(n)); fine for a food truck.
