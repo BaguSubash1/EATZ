@@ -19,7 +19,7 @@ src/main/java/eatz/controller/  CONTROLLER  EatzController, EatzApp (main)
 src/main/java/eatz/ModelDriver.java         tiny driver: model only, no view
 src/test/java/eatz/model/       JUnit tests for the model (no view, no controller)
 src/test/java/eatz/controller/  scripted whole-program test (fake keyboard)
-lib/                            JUnit console launcher jar (so no Maven/Gradle needed)
+lib/                            Bundled jar including JUnit 4.13.2 (no Maven/Gradle needed)
 build.ps1                       compile / test / run helper
 ```
 
@@ -28,7 +28,7 @@ build.ps1                       compile / test / run helper
 | Command | What it does |
 |---|---|
 | `.\build.ps1 driver` | **Model only.** Runs `ModelDriver`: adds, cancels, serves and remakes orders and shows rejected input. No view or controller is used. |
-| `.\build.ps1 test` | Compiles and runs all JUnit tests (68 tests; all pass). |
+| `.\build.ps1 test` | Compiles and runs all 68 JUnit 4 tests using `JUnitCore`. |
 | `.\build.ps1 run` | **Thin view.** Runs the real program: `EatzApp` -> `EatzController` -> `ConsoleView` -> `OrderLine`. |
 
 Without the script (what it does under the hood):

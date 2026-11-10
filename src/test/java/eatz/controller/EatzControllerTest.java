@@ -1,15 +1,15 @@
 package eatz.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import eatz.model.OrderLine;
 import eatz.view.ConsoleView;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Scanner;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 /** Scripted runs of the whole program (controller + view + model) using a fake keyboard. */
 public class EatzControllerTest {
