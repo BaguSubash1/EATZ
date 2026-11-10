@@ -185,4 +185,3 @@ each row and fill in the "how" (wrote / revised / reviewed / tested / GenAI-assi
 ### GenAI note
 
 ***During the preparation of this assignment, we used ChatGPT, in the development of EATZ for help and guidance in creating the files for the program when we were completely stuck. After using this tool, I reviewed and edited the content as needed to ensure its accuracy and take full responsibility for the content in relation to grading.***
->>>>>>> 544e030 (EATZ first prototype)
