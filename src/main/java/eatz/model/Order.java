@@ -13,7 +13,6 @@ public class Order {
     public final Map<String, Integer> items;
     public final Instant placedAt;
     private OrderStatus status;
-    private int skipCount;
 
     /**
      * Builds a ticket with status WAITING. Re-checks every field.
@@ -67,7 +66,6 @@ public class Order {
         this.items = Collections.unmodifiableMap(copy);
         this.placedAt = placedAt;
         this.status = OrderStatus.WAITING;
-        this.skipCount = 0;
     }
 
     /** @return WAITING, READY or CANCELLED */
@@ -78,14 +76,5 @@ public class Order {
     /** Only OrderLine (same package) changes the status. */
     void setStatus(OrderStatus status) {
         this.status = status;
-    }
-    /** @return the number of times this order has been skipped */
-    public int getSkipCount() {
-        return skipCount;
-    }
-
-    /** Increments the skip count. */
-    void addSkip() {
-        this.skipCount++;
     }
 }
