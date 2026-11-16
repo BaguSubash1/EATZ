@@ -97,6 +97,26 @@ public class OrderLine {
     }
 
     /**
+     * Skips the front order, moving it to the back of the line.
+     *
+     * @return a snapshot with its new position and wait time
+     */
+    public OrderInfo skipFront() {
+        if (waiting.isEmpty()) {
+            throw new IllegalStateException("Nobody's waiting.");
+        }
+        Order order = waiting.peek();
+        if (order.getSkipCount() >= 2) {
+            throw new IllegalArgumentException("That order was already skipped twice.");
+        }
+        order = waiting.dequeue();
+        order.addSkip();
+        Node<Order> node = waiting.enqueue(order);
+        nodeById.put(order.id, node);
+        return makeInfo(order, waiting.size());
+    }
+
+    /**
      * Cancels a waiting order, wherever it is in the line.
      *
      * @param id the order id

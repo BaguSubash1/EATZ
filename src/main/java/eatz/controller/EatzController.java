@@ -36,7 +36,7 @@ public class EatzController {
                 view.showMenu();
                 int choice;
                 try {
-                    choice = parseMenuChoice(view.readLine("Choose 1-5: "));
+                    choice = parseMenuChoice(view.readLine("Choose 1-6: "));
                 } catch (IllegalArgumentException e) {
                     view.showError(e.getMessage());
                     continue;
@@ -46,7 +46,8 @@ public class EatzController {
                     case 2 -> handleReady();
                     case 3 -> handleCancel();
                     case 4 -> handleViewLine();
-                    default -> handleRemake();
+                    case 5 -> handleRemake();
+                    default -> handleSkip();
                 }
             }
         } catch (NoSuchElementException e) {
@@ -58,13 +59,13 @@ public class EatzController {
     int parseMenuChoice(String raw) {
         try {
             int choice = Integer.parseInt(raw.trim());
-            if (choice >= 1 && choice <= 5) {
+            if (choice >= 1 && choice <= 6) {
                 return choice;
             }
         } catch (NumberFormatException e) {
             // fall through to the message below
         }
-        throw new IllegalArgumentException("Please choose a number from 1 to 5.");
+        throw new IllegalArgumentException("Please choose a number from 1 to 6.");
     }
 
     int parseId(String raw) {
@@ -128,6 +129,14 @@ public class EatzController {
         int id = promptUntilValid("Order ID to remake: ", this::parseId);
         try {
             view.showPositionText(model.remake(id));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            view.showError(e.getMessage());
+        }
+    }
+
+    private void handleSkip() {
+        try {
+            view.showSkipText(model.skipFront());
         } catch (IllegalArgumentException | IllegalStateException e) {
             view.showError(e.getMessage());
         }
