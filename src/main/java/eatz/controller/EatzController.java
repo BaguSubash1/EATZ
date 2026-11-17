@@ -47,7 +47,8 @@ public class EatzController {
                     case 3 -> handleCancel();
                     case 4 -> handleViewLine();
                     case 5 -> handleRemake();
-                    default -> handleShowFoodMenu();
+                    case 6 -> handleShowFoodMenu();
+                    default -> handleSkip();
                 }
             }
         } catch (NoSuchElementException e) {
@@ -135,5 +136,14 @@ public class EatzController {
     }
     private void handleShowFoodMenu() {
         view.showFoodMenu(OrderValidator.MENU);
+    }
+}
+
+    private void handleSkip() {
+        try {
+            view.showSkipText(model.skipFront());
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            view.showError(e.getMessage());
+        }
     }
 }

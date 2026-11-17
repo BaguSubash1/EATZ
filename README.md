@@ -19,7 +19,7 @@ src/main/java/eatz/controller/  CONTROLLER  EatzController, EatzApp (main)
 src/main/java/eatz/ModelDriver.java         tiny driver: model only, no view
 src/test/java/eatz/model/       JUnit tests for the model (no view, no controller)
 src/test/java/eatz/controller/  scripted whole-program test (fake keyboard)
-lib/                            JUnit console launcher jar (so no Maven/Gradle needed)
+lib/                            Bundled jar including JUnit 4.13.2 (no Maven/Gradle needed)
 build.ps1                       compile / test / run helper
 ```
 
@@ -28,7 +28,7 @@ build.ps1                       compile / test / run helper
 | Command | What it does |
 |---|---|
 | `.\build.ps1 driver` | **Model only.** Runs `ModelDriver`: adds, cancels, serves and remakes orders and shows rejected input. No view or controller is used. |
-| `.\build.ps1 test` | Compiles and runs all JUnit tests (68 tests; all pass). |
+| `.\build.ps1 test` | Compiles and runs all 68 JUnit 4 tests using `JUnitCore`. |
 | `.\build.ps1 run` | **Thin view.** Runs the real program: `EatzApp` -> `EatzController` -> `ConsoleView` -> `OrderLine`. |
 
 Without the script (what it does under the hood):
@@ -162,27 +162,26 @@ TODO (team): confirm owners.
 Owners below are taken from the Section 8 plan in the specification. TODO (team): confirm
 each row and fill in the "how" (wrote / revised / reviewed / tested / GenAI-assisted).
 
-| File | Who worked on it | How |
+| File | Who worked on it | Validator |
 |---|---|---|
-| `model/LinkedDeque.java` (includes `Node`) | Hannah | TODO |
-| `model/OrderLine.java` | Hannah | TODO |
-| `model/Order.java` | Rohit | TODO |
-| `model/OrderStatus.java` | Rohit | TODO |
-| `model/OrderInfo.java` | Rohit | TODO |
-| `model/OrderValidator.java` | Rohit | TODO |
-| `view/ConsoleView.java` | Bagu | TODO |
-| `controller/EatzController.java` | Ian | TODO |
-| `controller/EatzApp.java` | Ian | TODO |
-| `ModelDriver.java` | TODO | TODO |
-| `build.ps1`, `.gitignore` | TODO | TODO |
-| `test/model/LinkedDequeTest.java` | Hannah | TODO |
-| `test/model/OrderLineTest.java` | Hannah | TODO |
-| `test/model/OrderTest.java` | Rohit | TODO |
-| `test/model/OrderInfoTest.java` | Rohit | TODO |
-| `test/model/OrderValidatorTest.java` | Rohit | TODO |
-| `test/controller/EatzControllerTest.java` | Ian | TODO |
+| `model/LinkedDeque.java` (includes `Node`) | Hannah | Ian |
+| `model/OrderLine.java` | Hannah | Bagu |
+| `model/Order.java` | Rohit | Hannah |
+| `model/OrderStatus.java` | Rohit | Ian |
+| `model/OrderInfo.java` | Rohit | Bagu |
+| `model/OrderValidator.java` | Rohit | Ian |
+| `view/ConsoleView.java` | Bagu | Hannah |
+| `controller/EatzController.java` | Ian | Hannah |
+| `controller/EatzApp.java` | Ian | Rohit |
+| `ModelDriver.java` | Bagu | Hannah |
+| `build.ps1`, `.gitignore` | Bagu | Ian |
+| `test/model/LinkedDequeTest.java` | Hannah | Rohit |
+| `test/model/OrderLineTest.java` | Hannah | Ian |
+| `test/model/OrderTest.java` | Bagu | Rohit |
+| `test/model/OrderInfoTest.java` | Rohit | Hannah |
+| `test/model/OrderValidatorTest.java` | Rohit | Ian |
+| `test/controller/EatzControllerTest.java` | Ian | Bagu |
 
 ### GenAI note
 
-***During the preparation of this assignment, we used ChatGPT, in the development of Court vision for help and guidance in creating the files for the program when we were completely stuck. After using this tool, I reviewed and edited the content as needed to ensure its accuracy and take full responsibility for the content in relation to grading.***
->>>>>>> 544e030 (EATZ first prototype)
+***During the preparation of this assignment, we used ChatGPT, in the development of EATZ for help and guidance in creating the files for the program when we were completely stuck. After using this tool, I reviewed and edited the content as needed to ensure its accuracy and take full responsibility for the content in relation to grading.***

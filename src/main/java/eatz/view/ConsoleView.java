@@ -35,7 +35,8 @@ public class ConsoleView {
         out.println("3) Cancel order");
         out.println("4) View line");
         out.println("5) Remake order");
-        out.println("6) Show food menu");
+        out.println("6) Skip front order");
+        out.println("7) Show food menu");
     }
 
     /**
@@ -119,6 +120,13 @@ public class ConsoleView {
     public void showCancelText(OrderInfo info) {
         out.println("[TEXT to " + formatPhone(info.phone()) + "] " + info.name()
                 + ", your order " + info.id() + " was cancelled.");
+    }
+
+    /** Prints the simulated text telling a customer they were skipped and moved back. */
+    public void showSkipText(OrderInfo info) {
+        out.println("Order " + info.id() + " for " + info.name() + ".");
+        out.println("[TEXT to " + formatPhone(info.phone()) + "] We called you, now you're #"
+                + info.position() + ", about " + info.waitMinutes() + " min away.");
     }
 
     private String formatPhone(String digits) {
