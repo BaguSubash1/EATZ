@@ -105,7 +105,8 @@ public class ConsoleView {
 
     /** Prints the simulated text telling a customer their place in line. */
     public void showPositionText(OrderInfo info) {
-        out.println("Order " + info.id() + " for " + info.name() + ".");
+        out.println("Order ID: " + info.id() + " (keep this to cancel or remake) for "
+                + info.name() + ".");
         out.println("[TEXT to " + formatPhone(info.phone()) + "] You're #" + info.position()
                 + ", about " + info.waitMinutes() + " min away.");
     }
