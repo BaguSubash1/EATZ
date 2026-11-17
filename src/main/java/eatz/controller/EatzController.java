@@ -36,7 +36,7 @@ public class EatzController {
                 view.showMenu();
                 int choice;
                 try {
-                    choice = parseMenuChoice(view.readLine("Choose 1-6: "));
+                    choice = parseMenuChoice(view.readLine("Choose 1-7: "));
                 } catch (IllegalArgumentException e) {
                     view.showError(e.getMessage());
                     continue;
@@ -48,7 +48,7 @@ public class EatzController {
                     case 4 -> handleViewLine();
                     case 5 -> handleRemake();
                     case 6 -> handleSkip();
-                    default -> handleShowFoodMenu();
+                    case 7 -> handleShowFoodMenu();
                 }
             }
         } catch (NoSuchElementException e) {
@@ -60,13 +60,13 @@ public class EatzController {
     int parseMenuChoice(String raw) {
         try {
             int choice = Integer.parseInt(raw.trim());
-            if (choice >= 1 && choice <= 6) {
+            if (choice >= 1 && choice <= 7) {
                 return choice;
             }
         } catch (NumberFormatException e) {
             // fall through to the message below
         }
-        throw new IllegalArgumentException("Please choose a number from 1 to 6.");
+        throw new IllegalArgumentException("Please choose a number from 1 to 7.");
     }
 
     int parseId(String raw) {

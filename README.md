@@ -1,187 +1,135 @@
-<<<<<<< HEAD
-# EATZ
-=======
 # EATZ
 
-A terminal pager for food trucks. The cook types each order in, and the program prints a
-simulated text for the customer with their exact place in line, for example
-`[TEXT to 555-555-0142] You're #4, about 12 min away.`
+EATZ is a Java terminal pager for food trucks. The cook manages a waiting line and the app prints simulated customer text messages to the terminal. Orders and their history are stored in memory for the current session.
 
-Language: Java (tested with JDK 25; anything 17+ works). No build tool: just `javac`.
+## Run locally
 
-## Layout
-
-```
-src/main/java/eatz/model/       MODEL       LinkedDeque (Queue + Node), Order, OrderStatus,
-                                            OrderInfo, OrderValidator, OrderLine
-src/main/java/eatz/view/        VIEW        ConsoleView
-src/main/java/eatz/controller/  CONTROLLER  EatzController, EatzApp (main)
-src/main/java/eatz/ModelDriver.java         tiny driver: model only, no view
-src/test/java/eatz/model/       JUnit tests for the model (no view, no controller)
-src/test/java/eatz/controller/  scripted whole-program test (fake keyboard)
-lib/                            Bundled jar including JUnit 4.13.2 (no Maven/Gradle needed)
-build.ps1                       compile / test / run helper
-```
-
-## How to run (PowerShell, from this folder)
+Use JDK 17 or later with `java` and `javac` on your PATH. From the project root in PowerShell, run one of the following commands.
 
 | Command | What it does |
 |---|---|
-| `.\build.ps1 driver` | **Model only.** Runs `ModelDriver`: adds, cancels, serves and remakes orders and shows rejected input. No view or controller is used. |
-| `.\build.ps1 test` | Compiles and runs all 68 JUnit 4 tests using `JUnitCore`. |
-| `.\build.ps1 run` | **Thin view.** Runs the real program: `EatzApp` -> `EatzController` -> `ConsoleView` -> `OrderLine`. |
+| `.\build.ps1 run` | Compiles and starts the interactive console app. |
+| `.\build.ps1 driver` | Compiles and runs a model-only demo of adding, cancelling, marking ready, remaking, and rejecting invalid requests. |
+| `.\build.ps1 test` | Compiles and runs the JUnit 4 suite using `JUnitCore`. |
+| `.\build.ps1` | Compiles the app into `out/main`. |
 
-Without the script (what it does under the hood):
+The project uses `javac` directly and bundles the JUnit dependency in `lib/junit-platform-console-standalone-1.10.2.jar`.
 
-```
-javac -d out/main (all files under src/main)
-java -cp out/main eatz.ModelDriver
-java -cp out/main eatz.controller.EatzApp
-```
+## Use the console
 
-Using the program: pick `1` Add, `2` Mark ready, `3` Cancel, `4` View line, `5` Remake.
-Items are typed on one line like `2 taco, churro` (quantity optional). Menu: taco, burrito,
-quesadilla, churro, horchata. End of input quits with "Goodbye." (Ctrl+D on Mac/Linux, Ctrl+Z
-then Enter on Windows). Ctrl+C also prints "Goodbye.".
+| Choice | Behavior |
+|---|---|
+| **1. Add order** | Enter a name, phone number, and items. The order joins the back of the line. The console prints its ID and a simulated text with its position and estimated wait. |
+| **2. Mark ready** | Removes the front order from the waiting line and prints a simulated ready text. |
+| **3. Cancel order** | Removes a waiting order by ID and prints a simulated cancellation text. |
+| **4. View line** | Lists waiting orders from front to back with their positions, IDs, customer details, items, and estimated waits. |
+| **5. Remake order** | Returns a ready order to the front of the line using its original ID. |
+| **6. Skip front order** | Moves the front order to the back and prints a simulated text with its updated position and wait. Each order can be skipped twice. A third attempt leaves the line as it was. |
+| **7. Show food menu** | Lists the items accepted when adding an order. |
 
-## Design summary
+The food menu includes taco, burrito, quesadilla, churro, and horchata. Enter items on one line, separated by commas, as in `2 taco, churro`. A missing quantity defaults to 1. Repeated entries are combined, with limits of 10 units per item and 20 units per order.
 
-- **Model** (`eatz.model`) imports only `java.*` and itself. It never prints or reads.
-  `OrderLine` owns the Queue (`LinkedDeque<Order> waiting`) plus two hash maps; `nodeById`
-  points at queue nodes so Cancel unlinks in O(1). `OrderInfo` is the read-only snapshot the
-  model hands out.
-- **View** (`ConsoleView`) knows only `OrderInfo` and strings. It makes no decisions.
-- **Controller** (`EatzController`) is the only class touching both sides. It sends typed text
-  to `OrderValidator`, calls `OrderLine`, passes the answers to the view, and turns
-  `IllegalArgumentException` / `IllegalStateException` into messages.
+Enter a ten-digit phone number, optionally formatted as `(555) 555-0142`. New orders are limited to three waiting orders per phone number. EATZ asks for confirmation when the name, phone, and items match the most recently added order.
+
+Wait estimates are three minutes times the order's current position. Keep the order ID to cancel or remake the order. The ID is separate from its position, which changes as the line moves.
+
+To quit, send end of input with Ctrl+Z then Enter on Windows or Ctrl+D on macOS and Linux. You can also press Ctrl+C.
+
+## Design and layout
+
+| Path | Responsibility |
+|---|---|
+| `src/main/java/eatz/model/` | Manages orders, validation, and queue rules independently of terminal input and output. |
+| `src/main/java/eatz/view/ConsoleView.java` | Reads raw input and displays prompts, order snapshots, and simulated texts. |
+| `src/main/java/eatz/controller/` | `EatzApp` wires the app together. `EatzController` handles menu choices, calls the model, and passes results and errors to the view. |
+| `src/main/java/eatz/ModelDriver.java` | Runs a standalone demonstration of the model. |
+| `src/test/java/eatz/` | Contains model unit tests and scripted console tests. |
+
+`OrderLine` owns the doubly linked `LinkedDeque<Order>`. It tracks waiting orders by node so it can unlink a cancelled order in constant time once it finds the node. A second map retains orders by ID so a ready order can be remade. The view receives read-only `OrderInfo` snapshots.
 
 ## Reflection
 
-**What changed from our specification?**
+### How the design absorbed Skip
 
-| Area | Spec said | We built | Why |
-|---|---|---|---|
-| Classes | Class table listed 9 classes | Added `OrderStatus` (enum) and `ModelDriver` (tiny driver) | The spec used `OrderStatus` in Section 4 but never gave it a row; `ModelDriver` satisfies "exercisable from a tiny driver" without a view. |
-| ConsoleView methods | Spec named only `readLine`, `confirm`, `showError`, `showPositionText` | Also `showMenu`, `showMessage`, `showLine`, `showReadyText`, `showCancelText` | The spec said the view prints menus, the line and texts but never named those methods. Mark ready and Cancel each need a customer text. |
-| `Order` constructor | Re-checks id, name, phone, items, quantity >= 1, nulls | Also enforces the caps (10 per item, 20 per order) | Section 6 says caps "must hold even if a caller skips the controller". `OrderLine.addOrder` gets items as a Map, not text, so it cannot call `parseItems`; the `Order` constructor is the backstop. |
-| `parseItems` details | Listed the four error messages | Also: merged repeats are checked against the per-item cap (`10 taco, 5 taco` -> quantity error); empty entries like `taco,,churro` are ignored; `2x taco` -> quantity error; an entry that does not start with a digit or sign is treated as a whole item name (so `veggie burrito` says "isn't on the menu" instead of a confusing quantity error) | The spec left these cases open. |
-| `cleanName` | Strip control characters, collapse spaces, trim, cut to 30 | Same, but if the cut lands in the middle of an emoji (surrogate pair) the half is dropped | Avoids storing a broken character. |
-| `OrderInfo` from `markReady` / `cancel` | "position 0" | Position 0 **and** wait 0 | Wait is position x 3, so 0 follows from the spec's rule. |
-| `EatzApp` Ctrl+C hook | "registers a Ctrl+C hook that prints Goodbye." | The hook only prints if `run()` did not already finish | A JVM shutdown hook runs on every exit, so on Ctrl+D we would have printed "Goodbye." twice. |
-| Tests | Section 7 listed model tests only, no test creates a controller or view | All Section 7 model tests are written, plus a few extras (phone cap freeing up after a serve, remake not blocked by the cap, rejected add does not use an ID, remade order can be cancelled). We also added `EatzControllerTest`, a scripted-keyboard run | Section 8 asks for a scripted run (bad menu choice, bad phone, Mark ready on empty, end of input). It is a separate file in the controller package, so the model tests still never touch a view or controller. |
-| Validation location | Model decides, controller catches, view prints | Unchanged | The design held up. |
-| Method signatures | Frozen in Sections 4-5 | No public signature changed; only additions listed above | Frozen contract worked. |
+D3 predicted four production classes would change for Skip. The implementation touched all four.
 
-TODO (team): add the "what prompted it" detail for any change you remember from the
-Wednesday join discussion.
+| Class | What changed |
+|---|---|
+| `Order` | Stores a skip count, exposes it through `getSkipCount()`, and provides package-private `addSkip()`. |
+| `OrderLine` | Adds `skipFront()`, checks the empty-line and two-skip rules, and replaces the moved order's node in the ID lookup so cancellation still works. |
+| `EatzController` | Accepts choice 6, calls `skipFront()`, and sends the updated snapshot or the model's error to the view. |
+| `ConsoleView` | Displays choice 6 and prints the order ID, new position, and wait after a successful skip. |
 
-**Did the model really stand alone?**
-Yes. Every file in `eatz.model` imports only `java.*` and other `eatz.model` classes (checked
-with a search of the imports). The model is exercised by `ModelDriver` and by the JUnit
-tests with no `Scanner`, `PrintStream`, `ConsoleView` or `EatzController`. Nothing had to move across
-the line. The one judgement call: the duplicate-order question. The *model* decides what a
-duplicate is (`isDuplicateOfLast`), and the *controller + view* ask the cook (`confirm`), as
-the spec said.
+D3 predicted dequeuing before checking the count. The implementation uses `peek()` first, so a rejected third skip leaves both the queue and the lookup untouched. The existing deque operations were sufficient, and Skip required only the planned signature additions.
 
-**What happened to our unknowns?**
-From what the spec's GenAI note records:
-- *How `OrderLine` finds a queue node from an order ID without exposing links*: **figured out.** `enqueue` returns an opaque `Node<T>` handle, `OrderLine.nodeById` stores it, and `cancel` calls `remove(node)`. O(1), and the controller and view never see a link.
-- *What Remake should accept*: **figured out.** Only READY orders; cancelled or still-waiting ones are rejected.
-- *How the cook types several items*: **figured out.** One line through `parseItems`.
-- *Which bad inputs to handle, and the exact limits*: **figured out and implemented** (see below).
-- TODO (team): check this list against the "things we don't know how to do" list in the original scope document and mark each one figured out / still open.
+### Model and view boundary
 
-**What doesn't work yet?**
-- MVP features: all five menu choices work. Nothing is saved: the line lives in memory only, as the MVP says.
-- Bad-input cases from Section 6: not all are handled.
-- Need to include a show menu option for user convienence.
-- Need to display order ID from the model side on the view side for the remake option to work.
-- Not automatically tested: the Ctrl+C shutdown hook in `EatzApp` (it needs a real terminal), and `ConsoleView` formatting on its own (it is only checked through the scripted run).
-- No test checks the Section 4 invariants (`nodeById.size() == waiting.size()` etc.) directly, because those fields are private. They are only checked indirectly through `size()` / `getLine()`.
-- `addOrder` counts orders per phone by walking the whole line (O(n)); fine for a food truck.
-- Windows end-of-input is Ctrl+Z, not Ctrl+D.
-- No failing tests.
+The view gained a menu entry and a message. It reads the ID, position, and wait from the existing `OrderInfo` snapshot. The skip count and limit stay in the model, and the controller translates model errors into console feedback. The model still runs independently through its tests and `ModelDriver`.
+
+### Changes from the D3 plan
+
+Skip remains the change feature. The app also prints IDs on add and remake so the cook can reuse them, and choice 7 lists the food menu. D3 expected choice 7 to be invalid. The invalid-choice test now uses 8, and the scripted tests check that choice 7 reaches the menu.
+
+`OrderLineTest` covers reordering, updated waits, a single waiting order, empty-line rejection, the third-skip limit, and cancellation and remake after a skip. `OrderTest` covers skip-count initialization, incrementing, and status changes. Existing deque tests cover front and back insertion, removal, empty-deque errors, and null arguments. Parameterless queries such as `size()` and `isEmpty()` are tested in empty and populated states.
+
+### What still needs work
+
+All seven menu choices are reachable. The automated checks cover invalid choices, malformed phone numbers and IDs, unknown menu items, empty-line actions, and the skip limit. The complete D3 scope checklist and Ctrl+C still need a manual terminal pass. Orders are session-only, customer texts are simulated, and wait estimates update when queue positions change.
+
+## Test status
+
+`.\build.ps1 test` ran 75 JUnit 4 tests successfully. The core behavior is covered by model tests. The separate controller tests check that terminal commands reach the model and that the view displays the result.
 
 ## Next Steps
 
-**What is left to finish the MVP (in order)**
-1. Run the program by hand in a real terminal and try Ctrl+C and end of input (the hook is not covered by an automated test).
-2. Go through the Section 6 table once more with the real program and tick off every row by hand.
-3. Tidy `ConsoleView` output (alignment of the line display, clearer prompts).
-4. Merge to `main` only when `.\build.ps1 test` is green.
+### Final build
 
-**Our change feature (Deliverable 4): Skip / requeue the front order**
-When the customer at the front of the line does not show up, the cook picks "Skip". The front
-order moves to the back of the line and everyone moves up. An order can be skipped at most
-2 times; a third skip is rejected with "That order was already skipped twice." (it has to be
-served or cancelled). This adds new model state (a skip count per order) and new logic.
-
-*Prediction: what it touches*
-
-| Layer | Class and method | Change |
+| Order | Work remaining | Proposed owner |
 |---|---|---|
-| Model | `OrderLine.skipFront()` | **new**: dequeue front, check skip count, `enqueue` at the back, replace its entry in `nodeById`, return an `OrderInfo` with the new position |
-| Model | `Order` | **new** field `skipCount` with `getSkipCount()` and a package-private `addSkip()` (the spec's Section 4 table says Order has no changing field except `status`, so that table is updated) |
-| View | `ConsoleView.showMenu()` | one new line, `6) Skip front order` |
-| View | `ConsoleView.showSkipText(OrderInfo)` | **new**: prints "[TEXT to ...] We called you, now you're #n" |
-| Controller | `EatzController.parseMenuChoice(String)` | range changes from 1-5 to 1-6, and its error message |
-| Controller | `EatzController.run()` | one new `case 6` |
-| Controller | `EatzController.handleSkip()` | **new**, same shape as `handleReady` |
+| 1 | Walk the D3 bad-input checklist in a real terminal, including Ctrl+C and end of input. | Bagu leads, whole team participates |
+| 2 | Fix any queue or validation defects found in the walkthrough and cover them with model tests. | Hannah owns queue behavior, Rohit owns validation |
+| 3 | Rehearse the demo and fix any unclear prompts or line formatting it exposes. | Bagu owns console output, Ian owns the demo run |
+| 4 | Run the full suite on the final build and coordinate the merge. | Ian |
 
-*Prediction: what should NOT change*: `LinkedDeque` and `Node` (`dequeue`, `enqueue` and `remove` already do everything needed),
-`OrderValidator`, `OrderInfo` (position and wait already carry what the view needs), `EatzApp`, and `OrderLine.addOrder / markReady / cancel / remake / getLine`.
-We will compare this to what actually happens. The risk we see: `OrderLine.makeInfo` and
-`getLine` should stay the same, but if the "skipped twice" rule needs to show up in the line
-display, `OrderInfo` would have to change, which would cross a frozen contract.
+**Stretch goals.** Keep Skip as the implemented stretch feature. Drop the live countdown for this build. Position-based estimates already cover the demo, and a countdown would add timer and display updates beyond the current design.
 
-**Stretch goals**
-- Committing to: the Skip feature above (it is our change feature).
-- Dropping: the live countdown. The spec says it needs a model listener interface, which is a bigger change than we want to defend.
-- TODO (team): confirm against the stretch goals listed in the original scope document.
+### Three-minute demo
 
-**New tests we will need**
-- `OrderLineTest`: `skipFront` on [1,2,3] gives ids [2,3,1] with positions 1..3 and waits 3, 6, 9; skip with one order in line leaves it at position 1; skip on an empty line throws `IllegalStateException("Nobody's waiting.")`; the same order skipped a third time throws `IllegalArgumentException`; line unchanged after the rejected skip; a skipped order can still be cancelled (this checks `nodeById` was updated); a skipped order can still be served and remade.
-- `OrderTest`: new orders have skip count 0; `addSkip` increases it; `skipCount` is not changed by `setStatus`.
-- `EatzControllerTest`: choice `6` on an empty line shows the error once; choice `7` still shows "Please choose a number from 1 to 6."; skip then View line shows the new order.
-- `LinkedDequeTest`: none expected. If one is needed, our boundary was wrong.
-
-**Who does what (proposed, from the spec's Section 8 owners)**
-
-| Item | Owner |
+| Time | Walkthrough |
 |---|---|
-| `OrderLine.skipFront()` and its tests | Hannah |
-| `Order.skipCount` / `addSkip` and its tests | Rohit |
-| `ConsoleView.showMenu`, `showSkipText` | Bagu |
-| `EatzController` changes, scripted-run test, rerun before every merge, merges to `main` | Ian |
-| Hand test of Section 6 table and Ctrl+C | whole group |
-
-TODO (team): confirm owners.
+| 0:00 to 0:55 | Show the food menu with 7. Add Ana and Ben, point out the order IDs and simulated texts, and view the line with 4. |
+| 0:55 to 1:45 | Choose 6 to skip Ana. Show the simulated text with her new position and wait, then view the line to confirm Ben is first. |
+| 1:45 to 2:40 | Mark Ben ready with 2, remake his order with 5 using ID 2, then cancel Ana's order with 3 using ID 1. |
+| 2:40 to 3:00 | Enter 8 to show that bad input returns to the menu. End input to exit. |
 
 ## Attribution
 
-Owners below are taken from the Section 8 plan in the specification. TODO (team): confirm
-each row and fill in the "how" (wrote / revised / reviewed / tested / GenAI-assisted).
+The team used GenAI mainly to verify that the code worked, including checking behavior and running tests. The GenAI-assisted label refers to that project-wide verification support. The GenAI note below also records help with implementation and documentation.
 
-| File | Who worked on it | Validator |
-|---|---|---|
-| `model/LinkedDeque.java` (includes `Node`) | Hannah | Ian |
-| `model/OrderLine.java` | Hannah | Bagu |
-| `model/Order.java` | Rohit | Hannah |
-| `model/OrderStatus.java` | Rohit | Ian |
-| `model/OrderInfo.java` | Rohit | Bagu |
-| `model/OrderValidator.java` | Rohit | Ian |
-| `view/ConsoleView.java` | Bagu | Hannah |
-| `controller/EatzController.java` | Ian | Hannah |
-| `controller/EatzApp.java` | Ian | Rohit |
-| `ModelDriver.java` | Bagu | Hannah |
-| `build.ps1`, `.gitignore` | Bagu | Ian |
-| `test/model/LinkedDequeTest.java` | Hannah | Rohit |
-| `test/model/OrderLineTest.java` | Hannah | Ian |
-| `test/model/OrderTest.java` | Bagu | Rohit |
-| `test/model/OrderInfoTest.java` | Rohit | Hannah |
-| `test/model/OrderValidatorTest.java` | Rohit | Ian |
-| `test/controller/EatzControllerTest.java` | Ian | Bagu |
+The author and validator columns come from the Section 8 plan. The review and test columns list proposed assignments for the team to confirm.
+
+| File | Who worked on it | Validator | Reviewed (proposed) | Tested (proposed) | GenAI assistance |
+|---|---|---|---|---|---|
+| `model/LinkedDeque.java` (includes `Node`) | Hannah | Ian | Bagu | Rohit | GenAI-assisted |
+| `model/OrderLine.java` | Hannah | Bagu | Rohit | Ian | GenAI-assisted |
+| `model/Order.java` | Rohit | Hannah | Bagu | Ian | GenAI-assisted |
+| `model/OrderStatus.java` | Rohit | Ian | Hannah | Bagu | GenAI-assisted |
+| `model/OrderInfo.java` | Rohit | Bagu | Hannah | Ian | GenAI-assisted |
+| `model/OrderValidator.java` | Rohit | Ian | Hannah | Bagu | GenAI-assisted |
+| `view/ConsoleView.java` | Bagu | Hannah | Ian | Rohit | GenAI-assisted |
+| `controller/EatzController.java` | Ian | Hannah | Rohit | Bagu | GenAI-assisted |
+| `controller/EatzApp.java` | Ian | Rohit | Bagu | Hannah | GenAI-assisted |
+| `ModelDriver.java` | Bagu | Hannah | Rohit | Ian | GenAI-assisted |
+| `build.ps1`, `.gitignore` | Bagu | Ian | Hannah | Rohit | GenAI-assisted |
+| `test/model/LinkedDequeTest.java` | Hannah | Rohit | Ian | Bagu | GenAI-assisted |
+| `test/model/OrderLineTest.java` | Hannah | Ian | Bagu | Rohit | GenAI-assisted |
+| `test/model/OrderTest.java` | Bagu | Rohit | Ian | Hannah | GenAI-assisted |
+| `test/model/OrderInfoTest.java` | Rohit | Hannah | Bagu | Ian | GenAI-assisted |
+| `test/model/OrderValidatorTest.java` | Rohit | Ian | Hannah | Bagu | GenAI-assisted |
+| `test/controller/EatzControllerTest.java` | Ian | Bagu | Hannah | Rohit | GenAI-assisted |
 
 ### GenAI note
 
 ***During the preparation of this assignment, we used ChatGPT, in the development of EATZ for help and guidance in creating the files for the program when we were completely stuck. After using this tool, I reviewed and edited the content as needed to ensure its accuracy and take full responsibility for the content in relation to grading.***
+
+Codex also helped audit the checkpoint against the rubric, correct menu routing, add JUnit coverage, and update this README.

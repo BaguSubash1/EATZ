@@ -130,6 +130,52 @@ public class OrderLineTest {
     }
 
     @Test
+    public void skipFrontMovesOrderToBackAndUpdatesWaits() {
+        addOrders(3);
+        OrderInfo skipped = line.skipFront();
+        List<OrderInfo> remaining = line.getLine();
+        assertEquals(List.of(2, 3, 1), ids());
+        assertEquals(remaining.get(2), skipped);
+        for (int i = 0; i < remaining.size(); i++) {
+            assertEquals(i + 1, remaining.get(i).position());
+            assertEquals((i + 1) * 3, remaining.get(i).waitMinutes());
+        }
+        assertEquals(1, line.cancel(skipped.id()).id());
+        assertEquals(List.of(2, 3), ids());
+    }
+
+    @Test
+    public void skipFrontOnEmptyLineThrows() {
+        IllegalStateException error = assertThrows(IllegalStateException.class, line::skipFront);
+        assertEquals("Nobody's waiting.", error.getMessage());
+        assertTrue(line.isEmpty());
+    }
+
+    @Test
+    public void thirdSkipLeavesLineUnchanged() {
+        addOrders(2);
+        line.skipFront();
+        line.skipFront();
+        line.skipFront();
+        line.skipFront();
+        List<OrderInfo> before = line.getLine();
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class, line::skipFront);
+        assertEquals("That order was already skipped twice.", error.getMessage());
+        assertEquals(before, line.getLine());
+    }
+
+    @Test
+    public void oneOrderKeepsItsPositionAndCanBeReadiedAndRemade() {
+        addOrders(1);
+        assertEquals(1, line.skipFront().position());
+        assertEquals(1, line.markReady().id());
+        assertEquals(1, line.remake(1).id());
+        assertEquals(1, line.skipFront().position());
+        assertThrows(IllegalArgumentException.class, line::skipFront);
+        assertEquals(List.of(1), ids());
+    }
+
+    @Test
     public void cancelMiddleFirstAndLast() {
         addOrders(3);
         assertEquals(2, line.cancel(2).id());

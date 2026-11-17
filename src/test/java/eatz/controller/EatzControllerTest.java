@@ -43,7 +43,9 @@ public class EatzControllerTest {
         EatzController c = new EatzController(new OrderLine(),
                 new ConsoleView(new Scanner(""), new PrintStream(new ByteArrayOutputStream())));
         assertEquals(3, c.parseMenuChoice(" 3 "));
-        assertThrows(IllegalArgumentException.class, () -> c.parseMenuChoice("6"));
+        assertEquals(6, c.parseMenuChoice("6"));
+        assertEquals(7, c.parseMenuChoice("7"));
+        assertThrows(IllegalArgumentException.class, () -> c.parseMenuChoice("8"));
         assertThrows(IllegalArgumentException.class, () -> c.parseMenuChoice("x"));
         assertThrows(IllegalArgumentException.class, () -> c.parseMenuChoice(""));
         assertEquals(12, c.parseId("12"));
@@ -54,6 +56,7 @@ public class EatzControllerTest {
     public void happyPathAddViewReady() {
         String out = run("1\nAna\n555-555-0142\n2 taco, churro\n4\n2\n4\n");
         assertTrue(out.contains("[TEXT to 555-555-0142] You're #1, about 3 min away."));
+        assertTrue(out.contains("Order ID: 1 (keep this to cancel or remake) for Ana."));
         assertTrue(out.contains("order 1  Ana"));
         assertTrue(out.contains("your order 1 is ready!"));
         assertTrue(out.contains("The line is empty."));
@@ -68,7 +71,7 @@ public class EatzControllerTest {
                 + "2\n"                    // now empty
                 + "3\nabc\n99\n"           // bad id, unknown id
                 + "5\n99\n");              // remake unknown id; then end of input
-        assertEquals(1, count(out, "Please choose a number from 1 to 5."));
+        assertEquals(1, count(out, "Please choose a number from 1 to 7."));
         assertEquals(1, count(out, "Phone must be 10 digits."));
         assertEquals(1, count(out, "isn't on the menu"));
         assertEquals(1, count(out, "Nobody's waiting."));
@@ -83,6 +86,24 @@ public class EatzControllerTest {
         String out = run("2\n");
         assertTrue(out.contains("Nobody's waiting."));
         assertTrue(out.contains("Goodbye."));
+    }
+
+    @Test
+    public void skipShowsNewPositionAndSurvivesAnEmptyLine() {
+        String out = run("6\n1\nAna\n5555550142\ntaco\n1\nBen\n5555550143\nchurro\n6\n4\n");
+        assertEquals(1, count(out, "Nobody's waiting."));
+        assertTrue(out.contains("We called you, now you're #2, about 6 min away."));
+        assertTrue(out.contains("#1  order 2  Ben"));
+        assertTrue(out.contains("#2  order 1  Ana"));
+    }
+
+    @Test
+    public void foodMenuIsReachable() {
+        String out = run("7\n8\n");
+        assertTrue(out.contains("--- Food menu ---" + System.lineSeparator() + "  taco"));
+        assertTrue(out.contains("  horchata" + System.lineSeparator()));
+        assertEquals(1, count(out, "Please choose a number from 1 to 7."));
+        assertTrue(model.isEmpty());
     }
 
     @Test

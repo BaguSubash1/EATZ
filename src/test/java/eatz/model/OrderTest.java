@@ -61,4 +61,15 @@ public class OrderTest {
         order.setStatus(OrderStatus.READY);
         assertEquals(OrderStatus.READY, order.getStatus());
     }
+
+    @Test
+    public void skipCountStartsAtZeroAndSurvivesStatusChanges() {
+        Order order = new Order(1, "Ana", PHONE, Map.of("taco", 2), t);
+        assertEquals(0, order.getSkipCount());
+        order.addSkip();
+        assertEquals(1, order.getSkipCount());
+        order.setStatus(OrderStatus.READY);
+        order.setStatus(OrderStatus.WAITING);
+        assertEquals(1, order.getSkipCount());
+    }
 }
