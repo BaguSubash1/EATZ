@@ -35,6 +35,7 @@ public class ConsoleView {
         out.println("3) Cancel order");
         out.println("4) View line");
         out.println("5) Remake order");
+        out.println("6) Show food menu");
     }
 
     /**
@@ -77,6 +78,14 @@ public class ConsoleView {
     /** Prints a plain message. */
     public void showMessage(String message) {
         out.println(message);
+    }
+    
+    /** Prints the food items that can be ordered. */
+    public void showFoodMenu(List<String> items) {
+        out.println("--- Food menu ---");
+        for (String item : items) {
+            out.println("  " + item);
+        }
     }
 
     /** Prints the whole line, front first. */
